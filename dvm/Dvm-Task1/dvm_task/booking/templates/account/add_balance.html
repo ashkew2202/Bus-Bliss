@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Balance</title>
+    <style>
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+        h1 {
+            font: arial;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label, input, button {
+            margin-bottom: 15px;
+        }
+        button {
+            align-self: center;
+            padding: 10px 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add Balance</h1>
+        <form action="{% url 'booking-add_balance' %}" method="post">
+            {% csrf_token %}
+            {% if error %}
+                <div style="text-align: center; border: 1px solid red; padding: 2px; border-radius: 8px; background-color: rgba(255, 0, 0, 0.1);">
+                        <p>{{ error }}</p>
+                </div>
+            {% endif %}
+            <label for="amount">Enter the amount you want to add:</label>
+            <input type="number" id="amount" name="amount" required>
+            <button type="submit">Add Balance</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .bus-option {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        background-color: #f9f9f9;
+        transition: box-shadow 0.3s ease;
+        text-align: center;
+    }
+
+    .bus-option:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .bus-option h2 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+
+    .bus-option p {
+        margin: 4px 0;
+    }
+
+    .bus-option a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .bus-option a:hover {
+        text-decoration: underline;
+    }
+    h1 {
+        font-size: 2rem;
+        text-align: center;
+    }
+    .book-now-btn {
+        background-color: red;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .book-now-btn:hover {
+        background-color: darkred;
+    }
+</style>
+<div class="container mx-auto p-4">
+    <h1>Bus Options</h1>
+    {% for option in options %}
+            <div class="bus-option">
+                <h2>{{ option.bus_name.bus_name }}</h2>
+                <strong>Arrival:</strong> {{ option.from_arrival_time }}    <strong>Departure:</strong> {{ option.from_departure_time }}    <strong>Starting Price:</strong> {{ option.initial_price }}
+                <br><br><form action="{% url 'booking-ticket' route_id=option.route_id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="book-now-btn">Book Now</button>
+                </form>
+            </div>
+    {% endfor %}
+    {% if not options %}
+        <p>No buses available for the selected route.</p>
+    {% endif %}
+{% endblock %}
