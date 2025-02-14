@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import User
 from .models import BusStops, AddBus, Route, Wallet, BusStop, BusServiceRegistration, SeatInfo
 
 class Administration (admin.AdminSite):
@@ -25,3 +26,4 @@ adminSite.register(AddBus, BusAdmin)
 adminSite.register(Route, BusStopAdmin)
 adminSite.register(Wallet)
 adminSite.register(BusServiceRegistration)
+adminSite.register(User)
