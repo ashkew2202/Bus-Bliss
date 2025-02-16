@@ -47,7 +47,7 @@ def send_otp(request):
         username = request.POST.get('username')
         user, created = User.objects.get_or_create(username=username, email=request.POST.get('email'), password=request.POST.get('password')) 
         print(user)
-        otp = random.random()
+        otp = random.randint(100000, 999999)
         request.session['otp'] = str(otp)
         request.session['username'] = username
         send_mail(
@@ -69,7 +69,7 @@ def search(request):
         to_place = request.GET['to']
         date = request.GET['date']
         routes = list()
-        stops = BusStop.objects.filter(date=date)
+        stops = BusStop.objects.filter(date=date).order_by('arrival_time')
         for stop in stops:
             if stop.stop_id.stop_name == from_place:
                 routes.append(Route.objects.filter(id=stop.route_id_id))
@@ -114,6 +114,7 @@ def ticket(request, route_id):
 def confirmbooking(request):
     if request.method=='POST':
         requested_seats = int(request.POST.get('seats'))
+        print(requested_seats)
         bus_id = request.POST.get('bus_id')
         available_seats = SeatInfo.objects.filter(bus_id=bus_id, is_booked=False).count()
         
