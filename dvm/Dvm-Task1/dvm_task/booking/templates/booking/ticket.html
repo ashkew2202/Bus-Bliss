@@ -53,27 +53,27 @@
 
 <div class="container">
     <h1>Ticket Booking</h1>
-    <p>Bus Name: {{ bus.bus_name }}</p>
-    {% for seat in seats %}
-        
-        <div class="ticket">
-            <h2>{{ seat.seat_type }}</h2>
-            <p>Price: {{ seat.seat_price }}</p>
-            <label>Number of seats:</label>
-            <input type="number" id="{{seat.seat_type}} seats" name="{{seat.seat_type}} seats">
-        </div>
-
-    {% endfor %}
-    <div class="ticket" style="text-align: center;">
-        <button onclick="confirmBooking()">Book Now</button>
-    </div>
+    <form action="{% url 'booking-confirmbooking' bus_id=bus.id}" method="post">
+        {% csrf_token %}
+        <p>Bus Name: {{ bus.bus_name }}</p>
+        {% for seat in seats %}
+            <div class="ticket">
+                <h2>{{ seat.seat_type }}</h2>
+                <p>Price: {{ seat.seat_price }}</p>
+                <label>Number of seats:</label>
+                <input type="number" id="{{seat.seat_type}}" name="{{seat.seat_type}}">
+            </div>
+        {% endfor %}
+        {% if user.is_authenticated %}
+            <div class="ticket" style="text-align: center;">
+                <button type="submit">Book Now</button>
+            </div>
+        {% else %}
+            <div class="ticket" style="text-align: center;">
+                <a href="{% url 'login' %}">Login to book tickets</a>
+            </div>
+        {% endif %}
+    </form>
 </div>
 
-<script>
-    function confirmBooking() {
-        if (confirm("Do you want to book these tickets?")) {
-            alert("Tickets booked successfully!");
-        }
-    }
-</script>
 {% endblock %}

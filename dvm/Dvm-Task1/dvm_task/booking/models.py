@@ -68,6 +68,7 @@ class SeatInfo(models.Model):
     seat_type = models.CharField(max_length=100, choices=[('Luxury', 'Luxury'), ('Ordinary', 'Ordinary'), ('Sleeper', 'Sleeper')])
     seat_no = models.IntegerField()
     seat_price = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
+    seat_availability = models.BooleanField(default=True)
     class Meta:
         verbose_name_plural = 'Seat Information'
     

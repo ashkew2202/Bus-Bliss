@@ -23,9 +23,9 @@ def verify_otp(request):
             user = User.objects.get(username=request.session['username'])
             user.is_verified = True
             user.save()
-            return redirect("{% url 'account_login' %}")
+            return redirect('account_login')
         else:
-            return render(request, '{account/getotp.html}', {'error': 'Invalid OTP'})
+            return render(request, 'account/getotp.html', {'error': 'Invalid OTP'})
     return render(request, 'account/getotp.html')
 
 def user_add_balance(request):
@@ -111,14 +111,51 @@ def ticket(request, route_id):
     }
     return render(request, 'booking/ticket.html', context)
 
-def confirmbooking(request):
+def confirmbooking(request, bus_id):
     if request.method=='POST':
-        requested_seats = int(request.POST.get('seats'))
-        print(requested_seats)
-        bus_id = request.POST.get('bus_id')
-        available_seats = SeatInfo.objects.filter(bus_id=bus_id, is_booked=False).count()
-        
-        if requested_seats > available_seats:
-            return render(request, 'booking/check.html', {'error': 'Not enough seats available'})
-        
-        # Proceed with booking logic here
+        bus = AddBus.objects.filter(id=bus_id)
+        seats = SeatInfo.objects.filter(bus_id=bus[0].id)
+        user = User.objects.filter(username=request.user.username)
+        user_wallet = Wallet.objects.filter(user=user)
+        seats_requested = list(default=0)
+        is_verified = False
+        if is_verified == False:
+            return redirect('/send_otp')
+        else:
+            for seat in seats:
+                seats_requested[seat.id-1] = request.POST.get('seat.seat_type')
+                if seat.seat_no < seats_requested:
+                    return render(request, 'infocollector.html', {'error': 'Not enough seats available'})
+                elif seat.seat_no == seats_requested:
+                    seat.seat_no -= seats_requested
+                    seat.seat_availability = False
+                    seat.save()
+                else:
+                    seat.seat_no -= seats_requested
+                    seat.save()
+            balance = 0
+            for i in range(len(seats_requested)):
+                balance -= seats_requested[i] * seats[i].seat_price
+            if user_wallet.balance + balance < 0:
+                return redirect('/profile', {'error': 'Not enough balance, You only have ' + user_wallet.balance})
+            else:
+                user_wallet.balance += balance
+                user_wallet.save()
+    return render(request, 'infocollector.html')
+
+def bookingconfirmotp(request):
+    if request.method == 'POST':
+        username = user.username
+        user, created = User.objects.get(username=username) 
+        print(user)
+        otp = random.randint(100000, 999999)
+        request.session['otp'] = str(otp)
+        request.session['username'] = username
+        send_mail(
+            'OTP Verification For Booking',
+            f'Your OTP is {otp}',
+            settings.EMAIL_HOST_USER,
+            [user.email],
+            fail_silently=False,
+        )
+        return render(request, 'booking/confirmotp.html')

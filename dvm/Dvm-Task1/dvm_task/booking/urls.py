@@ -10,6 +10,8 @@ urlpatterns = [
     path('book/',booking_views.book, name='booking-book'),
     path('search-results/', booking_views.search, name='booking-results'),
     path('ticket/<int:route_id>/', booking_views.ticket, name='booking-ticket'),
+    path('confirmbooking/<int:bus_id>/', booking_views.confirmbooking, name='booking-confirmbooking'),
+    path('confirmotp/', booking_views.bookingconfirmotp, name='booking-confirmotp'),
 ]
 
 from django.conf import settings
