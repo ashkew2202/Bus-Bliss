@@ -84,7 +84,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # Configuring the templates folder so that I can override allauth's shit template 
         'DIRS': [
-            'D:/python workspace/stuff/dvm_task/booking/templates'
+            'D:/python workspace/stuff/dvm/Dvm-Task1/dvm/Dvm-Task1/dvm_task/booking/templates'
             ],
         'APP_DIRS': True,
         'OPTIONS': {

@@ -73,29 +73,31 @@ def search(request):
         for stop in stops:
             if stop.stop_id.stop_name == from_place:
                 routes.append(Route.objects.filter(id=stop.route_id_id))
+                
         if routes is None:
             return render(request, 'booking/results.html', {'error': 'No buses available'})
         
         options = list()
         print(routes)
-        for route1 in routes:
-            for route in route1:
-                bus = AddBus.objects.filter(id=route.bus_id_id)
-                stops = BusStop.objects.filter(route_id = route.id)
-                for stop in stops:
-                    if stop.stop_id.stop_name == from_place:
-                        from_arrival_time = stop.arrival_time
-                        from_departure_time = stop.departure_time
-                    if stop.stop_id.stop_name == to_place:
-                        to_arrival_time = stop.arrival_time
-                options.append({
-                    'route_id': route.id,
-                    'bus_name': bus[0],
-                    'from_arrival_time': from_arrival_time,
-                    'from_departure_time': from_departure_time,
-                    'to_arrival_time': to_arrival_time,
-                    'initial_price': SeatInfo.objects.filter(bus_id=bus[0].id)[0].seat_price
-                })
+        for route in routes:
+            bus = AddBus.objects.filter(id=route[0].bus_id_id)
+            stops = BusStop.objects.filter(route_id = route[0].id)
+            for stop in stops:
+                if stop.stop_id.stop_name == from_place:
+                    from_arrival_time = stop.arrival_time
+                    from_departure_time = stop.departure_time
+                if stop.stop_id.stop_name == to_place:
+                    to_arrival_time = stop.arrival_time
+            if from_arrival_time > to_arrival_time:
+                continue
+            options.append({
+                'route_id': route[0].id,
+                'bus_name': bus[0],
+                'from_arrival_time': from_arrival_time,
+                'from_departure_time': from_departure_time,
+                'to_arrival_time': to_arrival_time,
+                'initial_price': SeatInfo.objects.filter(bus_id=bus[0].id)[0].seat_price
+            })
 
         context = {
             'options': options
@@ -115,32 +117,29 @@ def confirmbooking(request, bus_id):
     if request.method=='POST':
         bus = AddBus.objects.filter(id=bus_id)
         seats = SeatInfo.objects.filter(bus_id=bus[0].id)
-        user = User.objects.filter(username=request.user.username)
-        user_wallet = Wallet.objects.filter(user=user)
-        seats_requested = list(default=0)
-        is_verified = False
-        if is_verified == False:
-            return redirect('/send_otp')
-        else:
-            for seat in seats:
-                seats_requested[seat.id-1] = request.POST.get('seat.seat_type')
-                if seat.seat_no < seats_requested:
-                    return render(request, 'infocollector.html', {'error': 'Not enough seats available'})
-                elif seat.seat_no == seats_requested:
-                    seat.seat_no -= seats_requested
-                    seat.seat_availability = False
-                    seat.save()
-                else:
-                    seat.seat_no -= seats_requested
-                    seat.save()
-            balance = 0
-            for i in range(len(seats_requested)):
-                balance -= seats_requested[i] * seats[i].seat_price
-            if user_wallet.balance + balance < 0:
-                return redirect('/profile', {'error': 'Not enough balance, You only have ' + user_wallet.balance})
+        user = User.objects.get(username=request.user.username)
+        user_wallet = Wallet.objects.get_or_create(user=user)
+        seats_requested = list()
+        for seat in seats:
+            print(request.POST.get(f'{seat.id}'))
+            seats_requested.append(request.POST.get(f'{seat.id}'))
+            if seat.seat_no < seats_requested[(seat.id-1)]:
+                return render(request, 'infocollector.html', {'error': 'Not enough seats available'})
+            elif seat.seat_no == seats_requested[(seat.id-1)]:
+                seat.seat_no -= seats_requested[(seat.id-1)]
+                seat.seat_availability = False
             else:
-                user_wallet.balance += balance
-                user_wallet.save()
+                seat.seat_no -= seats_requested[(seat.id-1)]
+        balance = 0
+        for i in range(len(seats_requested)):
+            balance -= seats_requested[i] * seats[i].seat_price
+        if user_wallet.balance + balance < 0:
+            return redirect('/profile', {'error': 'Not enough balance, You only have ' + user_wallet.balance})
+        else:
+            user_wallet.balance += balance
+            for seat in seats:
+                seat.save()
+            user_wallet.save()
     return render(request, 'infocollector.html')
 
 def bookingconfirmotp(request):
