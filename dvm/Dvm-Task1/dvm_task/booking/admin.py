@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from .models import BusStops, AddBus, Route, Wallet, BusStop, BusServiceRegistration, SeatInfo
+from .models import BusStops, AddBus, Route, Wallet, BusStop, BusServiceRegistration, SeatInfo, Booking
 
 class Administration (admin.AdminSite):
     site_header = 'Booking Administration'
@@ -27,3 +27,4 @@ adminSite.register(Route, BusStopAdmin)
 adminSite.register(Wallet)
 adminSite.register(BusServiceRegistration)
 adminSite.register(User)
+adminSite.register(Booking)

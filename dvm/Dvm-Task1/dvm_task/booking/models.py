@@ -78,9 +78,9 @@ class SeatInfo(models.Model):
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     bus_id = models.ForeignKey(AddBus, on_delete=models.CASCADE)
-    route_id = models.ForeignKey(Route, on_delete=models.CASCADE)
-    bus_stop_id = models.ForeignKey(BusStop, on_delete=models.CASCADE)
-    seat_type = models.CharField(max_length=100, choices=[('Luxury', 'Luxury'), ('Ordinary', 'Ordinary'), ('Sleeper', 'Sleeper')])
+    totalPrice = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
+    seats_requested = models.JSONField()
+    is_verified = models.BooleanField(default=False)
     class Meta:
         verbose_name_plural = 'Bookings'
     

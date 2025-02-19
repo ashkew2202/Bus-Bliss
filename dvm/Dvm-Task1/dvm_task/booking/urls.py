@@ -12,6 +12,7 @@ urlpatterns = [
     path('ticket/<int:route_id>/', booking_views.ticket, name='booking-ticket'),
     path('confirmbooking/<int:bus_id>/', booking_views.confirmbooking, name='booking-confirmbooking'),
     path('confirmotp/', booking_views.bookingconfirmotp, name='booking-confirmotp'),
+    path('verifybooking/', booking_views.verifybooking, name='booking-verifybooking'),
 ]
 
 from django.conf import settings
