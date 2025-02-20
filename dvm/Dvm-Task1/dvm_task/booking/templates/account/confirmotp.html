@@ -47,7 +47,7 @@
 <body>
     <div class="otp-container">
         <h2>Enter OTP</h2>
-        <form action="{% url 'booking-verify_otp' %}" method="post">
+        <form action="{% url 'booking-verifybooking' %}" method="post">
             {% csrf_token %}
             <input type="text" name="otp" placeholder="Enter OTP" required>
             <button type="submit">Submit</button>

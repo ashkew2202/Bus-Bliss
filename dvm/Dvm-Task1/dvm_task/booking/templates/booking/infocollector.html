@@ -43,14 +43,8 @@
 
     <div class="form-container">
         <h2>Passenger Information</h2>
-        <form action="{% url 'booking-confirmbooking' %}" method="post">
+        <form action="{% url 'booking-confirmotp' %}" method="post">
             {% csrf_token %}
-            {% for i in range(1, number_of_passengers + 1) %}
-                <div>
-                    <label for="age_{{ i }}">Passenger {{ i }} Age:</label>
-                    <input type="number" id="age_{{ i }}" name="age_{{ i }}" required>
-                </div>
-            {% endfor %}
             <button type="submit">Book</button>
         </form>
     </div>

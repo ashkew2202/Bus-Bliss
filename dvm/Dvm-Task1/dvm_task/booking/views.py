@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 import random
 from django.contrib.auth.models import User
+from django.utils import timezone
 from .models import Wallet, AddBus, BusStop, Route, SeatInfo, Booking
 
 def home(request):
@@ -19,13 +20,15 @@ def profile(request):
 def verify_otp(request):
     if request.method == 'POST':
         otp = request.POST.get('otp')
-        if otp == request.session['otp']:
+        time_now =timezone.now()
+        time_expired = time_now + timezone.timedelta(minutes=5)
+        if otp == request.session['otp'] and timezone.now() < time_expired:
             user = User.objects.get(username=request.session['username'])
             user.is_verified = True
             user.save()
             return redirect('account_login')
         else:
-            return render(request, 'account/getotp.html', {'error': 'Invalid OTP'})
+            return render(request, 'account/getotp.html', {'error': 'Invalid OTP' or 'OTP expired'})
     return render(request, 'account/getotp.html')
 
 def user_add_balance(request):
@@ -130,27 +133,59 @@ def confirmbooking(request, bus_id):
             price += count * seat_price
         booking = Booking.objects.create(user=user, bus_id = bus[0], totalPrice=price, seats_requested=seats_requested)
         booking.save()
-        return redirect('/confirmotp')
-    return render(request, 'infocollector.html')
+    return render(request, 'booking/infocollector.html')
 
 def verifybooking(request):
     if request.method == 'POST':
         otp = request.POST.get('otp')
-        if otp == request.session['otp']:
-            user = User.objects.get(username=request.session['username'])
+        time_now =timezone.now()
+        time_expired = time_now + timezone.timedelta(minutes=5)
+        if otp == request.session['otp'] and timezone.now() < time_expired:
+            user = request.user
             booking = Booking.objects.get(user=user)
             booking.is_verified = True
             booking.save()
-            return redirect('account_login')
+            wallet = Wallet.objects.get(user=user)
+            if wallet.balance >= booking.totalPrice:
+                wallet.balance -= booking.totalPrice
+                seats = SeatInfo.objects.filter(bus_id=booking.bus_id.id)
+                for seat in seats:
+                    seat_type = seat.seat_type
+                    seat_count = booking.seats_requested.get(seat_type, 0)
+                    if seat.seat_no >= seat_count:
+                        seat.seat_no -= seat_count
+                        if seat.seat_no == 0:
+                            seat.seat_availability = False
+                    else:
+                        return render(request, 'booking/confirmotp.html', {'error': 'Not enough seats available'})
+                    seat.save()
+                wallet.save()
+            else:
+                booking.delete()
+                return redirect('booking-profile')
+            return redirect('booking-ticketinfo')
         else:
-            return render(request, 'booking/confirmotp.html', {'error': 'Invalid OTP'})
+            booking = Booking.objects.get(user=request.user)
+            booking.delete()
+            return render(request, 'account/confirmotp.html', {'error': 'Invalid OTP or OTP expired, booking cancelled'})
     return render(request, 'account/confirmotp.html')
+
+def showticketinfo(request):
+    user = request.user
+    seats = Booking.objects.get(user=user).seats_requested
+    print(seats)
+    booking = Booking.objects.get(user=user)
+    context = {
+        'booking': booking,
+    }
+    return render(request, 'booking/ticketinfo.html', context)
 
 def bookingconfirmotp(request):
     print(request.method)
-    if request.method == 'GET':
-        username = user
-        user, created = User.objects.get(username=username) 
+    if request.method == 'POST':
+        username = request.user.username
+        print(username)
+        user = User.objects.get(username=username) 
         print(user)
         otp = random.randint(100000, 999999)
         request.session['otp'] = str(otp)
@@ -164,3 +199,26 @@ def bookingconfirmotp(request):
         )
         return redirect('/verifybooking')
     return render(request, 'account/confirmotp.html')
+
+def cancelBooking(request):
+    user = request.user
+    booking = Booking.objects.get(user=user)
+    if booking.is_verified:
+        wallet = Wallet.objects.get(user=user)
+        wallet.balance += booking.totalPrice
+        seats = SeatInfo.objects.filter(bus_id=booking.bus_id.id)
+        for seat in seats:
+            seat_type = seat.seat_type
+            seat_count = booking.seats_requested.get(seat_type, 0)
+            seat.seat_no += seat_count
+            seat.save()
+        wallet.save()
+        booking.delete()
+        send_mail(
+            'Booking Cancelled',
+            'Your booking has been cancelled',
+            settings.EMAIL_HOST_USER,
+            [user.email],
+            fail_silently=False,
+        )
+    return redirect('booking-home')
