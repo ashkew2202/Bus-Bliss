@@ -110,11 +110,11 @@ DATABASES = {
         'NAME': 'postgres_alpha1',
         'USER': os.getenv('DB_USERNAME'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': 'localhost',
+        'HOST': os.getenv('SQL_HOST','db'),
         'PORT': os.getenv('PORT_NUMBER'),
     }
 }
-
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

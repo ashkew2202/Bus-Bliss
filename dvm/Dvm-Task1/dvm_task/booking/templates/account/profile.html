@@ -29,10 +29,25 @@
     }
 </style>
   <h1>Profile</h1>
-  <p>Username: {{ user.username }}</p>
-  <p>Balance: {{ balance }}</p>
+<p>Username: {{ user.username }}</p>
+<p>Balance: {{ balance }}</p>
   <p>Email ID: {{ user.email }}</p>
-  <form action="{% url 'booking-add_balance' %}" method="get">
+<form action="{% url 'booking-add_balance' %}" method="get">
     <button type="submit">Add Balance</button>
-  </form>
+</form>
+<hr style="border: none; border-top: 2px solid #333; margin: 20px 0;">
+<h2>Booking Information</h2>
+{% for b in booking %}
+    <p>Booking ID: {{ b.id }}</p>
+    <p>Booking Status: {{ b.is_verified }}</p>
+    {% for bus in bus_objects %}
+        <p>Bus Date: {{ bus.date }}</p>
+        <p>Bus Time: {{ bus.time }}</p>
+    {% endfor %}
+    <form action="{% url 'booking-cancelbooking' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Cancel Booking</button>
+    </form>
+    <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+{% endfor %}
 {% endblock %}

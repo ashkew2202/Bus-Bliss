@@ -12,9 +12,16 @@ def home(request):
 def profile(request):
     username = request.user.username
     wallet, created = Wallet.objects.get_or_create(user=request.user)
+    try:
+        bookings = Booking.objects.filter(user=request.user)
+    except Booking.DoesNotExist:
+        bookings = None
+        
     context = {
+        'booking':bookings,
         'balance':wallet.balance,
     }
+    
     return render(request, 'account/profile.html', context=context)
 
 def verify_otp(request):
@@ -178,6 +185,17 @@ def showticketinfo(request):
     context = {
         'booking': booking,
     }
+    seats_dict = booking.seats_requested
+    cancel_url = request.build_absolute_uri('/cancelBooking')
+    send_mail(
+        'Booking Confirmed!',
+        f'''Your booked seats are {seats_dict}
+        If you want to cancel your booking click on the link before 6 days in your profile.
+        ''',
+        settings.EMAIL_HOST_USER,
+        [user.email],
+        fail_silently=False,
+    )
     return render(request, 'booking/ticketinfo.html', context)
 
 def bookingconfirmotp(request):
