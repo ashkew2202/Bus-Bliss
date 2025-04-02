@@ -82,10 +82,11 @@ ROOT_URLCONF = 'dvm_task.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # Configuring the templates folder so that I can override allauth's shit template 
+        # Configuring the templates folder so that I can override allauth's
+        # template
         'DIRS': [
-            'D:/python workspace/stuff/dvm/Dvm-Task1/dvm/Dvm-Task1/dvm_task/booking/templates'
-            ],
+            os.path.join(BASE_DIR, 'booking/templates')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -110,7 +111,7 @@ DATABASES = {
         'NAME': 'postgres_alpha1',
         'USER': os.getenv('DB_USERNAME'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('SQL_HOST','db'),
+        'HOST': os.getenv('SQL_HOST', 'db'),
         'PORT': os.getenv('PORT_NUMBER'),
     }
 }
@@ -154,10 +155,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-#django-allauth configuration
+# django-allauth configuration
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
