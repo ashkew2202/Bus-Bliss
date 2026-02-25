@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .logout-container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .logout-card {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: 3rem 2.5rem;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .logout-card .icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .logout-card h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+    }
+
+    .logout-card p {
+        color: var(--gray-500);
+        margin-bottom: 2rem;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-group .btn {
+        flex: 1;
+    }
+</style>
+
+<div class="logout-container">
+    <div class="logout-card">
+        <div class="icon">👋</div>
+        <h1>Sign Out</h1>
+        <p>Are you sure you want to sign out of your account?</p>
+        
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <div class="btn-group">
+                <a href="{% url 'booking-home' %}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">Sign Out</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

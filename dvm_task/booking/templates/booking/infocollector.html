@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .confirm-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .confirm-card {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .confirm-card .icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .confirm-card h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+    }
+
+    .confirm-card p {
+        color: var(--gray-500);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .otp-notice {
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        color: var(--primary-dark);
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="confirm-container">
+    <div class="confirm-card">
+        <div class="icon">📧</div>
+        <h2>Confirm Your Booking</h2>
+        <p>We'll send an OTP to your registered email address to verify your booking.</p>
+        
+        <div class="otp-notice">
+            🔐 Please have access to your email for OTP verification
+        </div>
+
+        <form action="{% url 'booking-confirmotp' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                Send OTP & Confirm
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

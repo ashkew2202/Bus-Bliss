@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem;
+        color: var(--white);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+    }
+
+    .profile-info h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .profile-info p {
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .profile-info p::before {
+        content: '📧';
+    }
+
+    .wallet-card {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .wallet-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .wallet-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+    }
+
+    .wallet-label {
+        font-size: 0.9rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+
+    .wallet-balance {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--gray-900);
+    }
+
+    .wallet-balance::before {
+        content: '₹';
+        font-size: 1.5rem;
+        color: var(--gray-500);
+    }
+
+    .bookings-section h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .bookings-section h2::before {
+        content: '🎫';
+    }
+
+    .booking-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 1rem;
+        border: 1px solid var(--gray-100);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .booking-id {
+        font-weight: 700;
+        color: var(--gray-900);
+    }
+
+    .booking-status {
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-verified {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+
+    .status-pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+    }
+
+    .booking-details {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .no-bookings {
+        text-align: center;
+        padding: 3rem;
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+    }
+
+    .no-bookings .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .no-bookings h3 {
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .no-bookings p {
+        color: var(--gray-500);
+    }
+
+    @media (max-width: 600px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .wallet-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .wallet-info {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="avatar">👤</div>
+        <div class="profile-info">
+            <h1>{{ user.username }}</h1>
+            <p>{{ user.email }}</p>
+        </div>
+    </div>
+
+    <div class="wallet-card">
+        <div class="wallet-info">
+            <div class="wallet-icon">💰</div>
+            <div>
+                <div class="wallet-label">Wallet Balance</div>
+                <div class="wallet-balance">{{ balance }}</div>
+            </div>
+        </div>
+        <form action="{% url 'booking-add_balance' %}" method="get">
+            <button type="submit" class="btn btn-success">+ Add Balance</button>
+        </form>
+    </div>
+
+    <div class="bookings-section">
+        <h2>My Bookings</h2>
+        
+        {% if booking %}
+            {% for b in booking %}
+            <div class="booking-card">
+                <div class="booking-header">
+                    <span class="booking-id">Booking #{{ b.id }}</span>
+                    <span class="booking-status {% if b.is_verified %}status-verified{% else %}status-pending{% endif %}">
+                        {% if b.is_verified %}✓ Verified{% else %}⏳ Pending{% endif %}
+                    </span>
+                </div>
+                <div class="booking-details">
+                    {% for bus in bus_objects %}
+                    <div class="detail-item">
+                        <span class="detail-label">Date</span>
+                        <span class="detail-value">{{ bus.date }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Time</span>
+                        <span class="detail-value">{{ bus.time }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <form action="{% url 'booking-cancelbooking' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                </form>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-bookings">
+                <div class="icon">📭</div>
+                <h3>No Bookings Yet</h3>
+                <p>You haven't made any bookings. Start your journey now!</p>
+                <a href="{% url 'booking-book' %}" class="btn btn-primary mt-3">Book a Trip</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

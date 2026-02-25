@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .ticket-info-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .success-banner {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: var(--white);
+        text-align: center;
+        padding: 2rem;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    }
+
+    .success-banner .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .success-banner h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+    }
+
+    .ticket-details {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: var(--gray-500);
+        font-weight: 500;
+    }
+
+    .detail-value {
+        color: var(--gray-900);
+        font-weight: 600;
+    }
+
+    .seats-list {
+        margin-top: 1rem;
+    }
+
+    .seat-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius);
+        margin-bottom: 0.5rem;
+    }
+
+    .seat-item span:first-child {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .seat-item span:first-child::before {
+        content: '💺';
+    }
+
+    .cancel-notice {
+        background: rgba(249, 115, 22, 0.1);
+        border: 1px solid rgba(249, 115, 22, 0.2);
+        color: var(--secondary-dark);
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin: 1.5rem 0;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .not-verified-card {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: 3rem 2rem;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .not-verified-card .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .not-verified-card h3 {
+        color: var(--danger);
+        margin-bottom: 0.5rem;
+    }
+
+    .not-verified-card p {
+        color: var(--gray-500);
+    }
+</style>
+
+<div class="ticket-info-container">
+    {% if booking.is_verified %}
+    <div class="success-banner">
+        <div class="icon">✅</div>
+        <h1>Booking Confirmed!</h1>
+    </div>
+    <div class="ticket-details">
+        <div class="detail-row">
+            <span class="detail-label">Booking ID</span>
+            <span class="detail-value">#{{ booking.id }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Customer Name</span>
+            <span class="detail-value">{{ booking.user.username }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Booking Date</span>
+            <span class="detail-value">{{ booking.date }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Status</span>
+            <span class="detail-value" style="color: var(--success);">✓ Verified</span>
+        </div>
+        
+        <h4 class="mt-3 mb-2">Booked Seats</h4>
+        <div class="seats-list">
+            {% for seat_type, seat_no in booking.seats_requested.items %}
+            <div class="seat-item">
+                <span>{{ seat_type }}</span>
+                <span>× {{ seat_no }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="cancel-notice">
+            ⚠️ You can cancel this ticket up to 6 days before the journey
+        </div>
+
+        <form action="{% url 'booking-cancelbooking' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-block">Cancel Booking</button>
+        </form>
+    </div>
+    {% else %}
+    <div class="not-verified-card">
+        <div class="icon">⚠️</div>
+        <h3>Booking Not Verified</h3>
+        <p>This booking has not been verified yet.</p>
+        <a href="{% url 'booking-home' %}" class="btn btn-primary mt-3">Go Home</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

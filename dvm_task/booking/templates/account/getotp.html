@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .otp-container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .otp-card {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .otp-card .icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .otp-card h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+    }
+
+    .otp-card p {
+        color: var(--gray-500);
+        margin-bottom: 2rem;
+    }
+
+    .otp-input {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.5rem;
+        padding: 1rem;
+    }
+
+    .otp-hint {
+        margin-top: 1.5rem;
+        font-size: 0.85rem;
+        color: var(--gray-500);
+    }
+</style>
+
+<div class="otp-container">
+    <div class="otp-card">
+        <div class="icon">🔐</div>
+        <h1>Verify Your Email</h1>
+        <p>We've sent a 6-digit OTP to your email address. Enter it below to verify your account.</p>
+        
+        {% if error %}
+        <div class="alert alert-error mb-3">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="{% url 'booking-verify_otp' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" name="otp" class="form-input otp-input" placeholder="000000" maxlength="6" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Verify OTP</button>
+        </form>
+
+        <p class="otp-hint">Didn't receive the code? Check your spam folder.</p>
+    </div>
+</div>
+{% endblock %}
