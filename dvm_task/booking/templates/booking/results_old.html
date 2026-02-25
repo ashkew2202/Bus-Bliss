@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .results-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .results-header .icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .results-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .bus-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .bus-card {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-100);
+        transition: var(--transition);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .bus-card:hover {
+        box-shadow: var(--shadow-xl);
+        transform: translateY(-2px);
+        border-color: var(--primary-light);
+    }
+
+    .bus-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .bus-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .bus-name::before {
+        content: '🚌';
+        font-size: 1.25rem;
+    }
+
+    .bus-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--gray-500);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .time-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .time-badge::before {
+        font-size: 1rem;
+    }
+
+    .arrival::before { content: '🕐'; }
+    .departure::before { content: '🚀'; }
+
+    .route-line {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray-400);
+    }
+
+    .route-line::before,
+    .route-line::after {
+        content: '';
+        height: 2px;
+        width: 30px;
+        background: var(--gray-300);
+        border-radius: 1px;
+    }
+
+    .bus-action {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.75rem;
+    }
+
+    .price {
+        text-align: right;
+    }
+
+    .price-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-transform: uppercase;
+    }
+
+    .price-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--success);
+    }
+
+    .price-value::before {
+        content: '₹';
+        font-size: 1.25rem;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+    }
+
+    .no-results .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .no-results h3 {
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .no-results p {
+        color: var(--gray-500);
+    }
+
+    @media (max-width: 768px) {
+        .bus-card {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .bus-info {
+            align-items: center;
+        }
+
+        .bus-details {
+            justify-content: center;
+        }
+
+        .bus-action {
+            align-items: center;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .price {
+            text-align: left;
+        }
+    }
+</style>
+
+<div class="results-container">
+    <div class="results-header">
+        <div class="icon">🎯</div>
+        <h1 class="section-title">Available Buses</h1>
+        <p class="section-subtitle">Select your preferred bus for the journey</p>
+    </div>
+
+    {% if options %}
+    <div class="bus-list">
+        {% for option in options %}
+        <div class="bus-card">
+            <div class="bus-info">
+                <h2 class="bus-name">{{ option.bus_name.bus_name }}</h2>
+                <div class="bus-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Arrival</span>
+                        <span class="detail-value time-badge arrival">{{ option.from_arrival_time }}</span>
+                    </div>
+                    <div class="route-line">→</div>
+                    <div class="detail-item">
+                        <span class="detail-label">Departure</span>
+                        <span class="detail-value time-badge departure">{{ option.from_departure_time }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bus-action">
+                <div class="price">
+                    <span class="price-label">Starting from</span>
+                    <div class="price-value">{{ option.initial_price }}</div>
+                </div>
+                <form action="{% url 'booking-ticket' route_id=option.route_id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Select Bus →</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-results">
+        <div class="icon">🔍</div>
+        <h3>No Buses Found</h3>
+        <p>Sorry, no buses are available for the selected route and date.</p>
+        <a href="{% url 'booking-book' %}" class="btn btn-primary mt-3">Try Another Search</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

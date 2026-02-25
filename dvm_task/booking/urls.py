@@ -55,6 +55,10 @@ urlpatterns = [
         'cancelbooking/',
         booking_views.cancelBooking,
         name='booking-cancelbooking'),
+    path(
+        'search-autocomplete/',
+        booking_views.searchAutoComplete,
+        name='booking-search-autocomplete'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

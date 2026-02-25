@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from django.conf import settings
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 import random
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -93,47 +95,113 @@ def book(request):
 
 def search(request):
     if request.method == "GET":
-        from_place = request.GET["from"]
-        to_place = request.GET["to"]
-        date = request.GET["date"]
+        from_place = request.GET.get("from", "")
+        to_place = request.GET.get("to", "")
+        date = request.GET.get("date", "")
+        sort_by = request.GET.get("sort", "departure")  # departure, price, duration
+        
+        if not from_place or not to_place or not date:
+            return render(request, "booking/results.html", {
+                "error": "Please provide all search parameters",
+                "from_place": from_place,
+                "to_place": to_place,
+                "date": date,
+            })
+        
         routes = list()
         stops = BusStop.objects.filter(date=date).order_by("arrival_time")
+        print(stops)
         for stop in stops:
             if stop.stop_id.stop_name == from_place:
                 routes.append(Route.objects.filter(id=stop.route_id_id))
 
-        if routes is None:
-            return render(
-                request, "booking/results.html", {"error": "No buses available"}
-            )
+        if not routes:
+            return render(request, "booking/results.html", {
+                "error": "No buses available for this route",
+                "from_place": from_place,
+                "to_place": to_place,
+                "date": date,
+            })
 
         options = list()
-        print(routes)
         for route in routes:
-            bus = AddBus.objects.filter(id=route[0].bus_id_id)
-            stops = BusStop.objects.filter(route_id=route[0].id)
-            for stop in stops:
-                if stop.stop_id.stop_name == from_place:
-                    from_arrival_time = stop.arrival_time
-                    from_departure_time = stop.departure_time
-                if stop.stop_id.stop_name == to_place:
-                    to_arrival_time = stop.arrival_time
-            if from_arrival_time > to_arrival_time:
+            bus = AddBus.objects.filter(id=route[0].bus_id_id).first()
+            if not bus or not bus.available:
                 continue
-            options.append(
-                {
-                    "route_id": route[0].id,
-                    "bus_name": bus[0],
-                    "from_arrival_time": from_arrival_time,
-                    "from_departure_time": from_departure_time,
-                    "to_arrival_time": to_arrival_time,
-                    "initial_price": SeatInfo.objects.filter(bus_id=bus[0].id)[
-                        0
-                    ].seat_price,
-                }
-            )
+                
+            route_stops = BusStop.objects.filter(route_id=route[0].id)
+            from_stop_data = None
+            to_stop_data = None
+            
+            for stop in route_stops:
+                if stop.stop_id.stop_name == from_place:
+                    from_stop_data = {
+                        'date': stop.date,
+                        'arrival_time': stop.arrival_time,
+                        'departure_time': stop.departure_time,
+                    }
+                if stop.stop_id.stop_name == to_place:
+                    to_stop_data = {
+                        'date': stop.date,
+                        'arrival_time': stop.arrival_time,
+                    }
+            
+            # Skip if destination not found
+            if not to_stop_data or not from_stop_data:
+                continue
+            
+            # Check direction using both date and time
+            from datetime import datetime, timedelta
+            from_datetime = datetime.combine(from_stop_data['date'], from_stop_data['departure_time'])
+            to_datetime = datetime.combine(to_stop_data['date'], to_stop_data['arrival_time'])
+            
+            # Skip if wrong direction (destination before origin)
+            if from_datetime >= to_datetime:
+                continue
+            
+            # Calculate journey duration
+            duration = to_datetime - from_datetime
+            duration_hours = duration.seconds // 3600 + (duration.days * 24)
+            duration_mins = (duration.seconds % 3600) // 60
+            
+            # Get seat info
+            seats = SeatInfo.objects.filter(bus_id=bus.id, seat_availability=True)
+            total_seats = sum(seat.seat_no for seat in seats)
+            seat_types = list(seats.values_list('seat_type', flat=True).distinct())
+            min_price = seats.order_by('seat_price').first()
+            min_price_value = min_price.seat_price if min_price else 0
+            
+            options.append({
+                "route_id": route[0].id,
+                "bus_name": bus,
+                "bus_id": bus.id,
+                "from_arrival_time": from_stop_data['arrival_time'],
+                "from_departure_time": from_stop_data['departure_time'],
+                "to_arrival_time": to_stop_data['arrival_time'],
+                "to_date": to_stop_data['date'],
+                "duration_hours": duration_hours,
+                "duration_mins": duration_mins,
+                "total_seats": total_seats,
+                "seat_types": seat_types,
+                "initial_price": min_price_value,
+            })
+        
+        # Sort options
+        if sort_by == "price":
+            options.sort(key=lambda x: x["initial_price"])
+        elif sort_by == "duration":
+            options.sort(key=lambda x: (x["duration_hours"], x["duration_mins"]))
+        else:  # default: departure time
+            options.sort(key=lambda x: x["from_departure_time"])
 
-        context = {"options": options}
+        context = {
+            "options": options,
+            "from_place": from_place,
+            "to_place": to_place,
+            "date": date,
+            "sort_by": sort_by,
+            "total_results": len(options),
+        }
     return render(request, "booking/results.html", context)
 
 
@@ -275,3 +343,9 @@ def cancelBooking(request):
             fail_silently=False,
         )
     return redirect("booking-home")
+
+@api_view(['GET'])
+def searchAutoComplete(request):
+    query=request.GET.get('query', '')
+    bus_stops = BusStop.objects.filter(stop_id__stop_name__icontains=query).values_list('stop_id__stop_name', flat=True).distinct()
+    return Response(list(bus_stops))

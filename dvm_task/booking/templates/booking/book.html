@@ -98,6 +98,42 @@
         font-weight: 600;
     }
 
+    .autocomplete-wrapper {
+        position: relative;
+    }
+
+    .autocomplete-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        list-style: none;
+        padding: 0;
+        margin: 0.25rem 0 0 0;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        display: none;
+    }
+
+    .autocomplete-list.active {
+        display: block;
+    }
+
+    .autocomplete-list li {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .autocomplete-list li:hover {
+        background: var(--gray-100);
+    }
+
     @media (max-width: 480px) {
         .booking-card {
             padding: 1.5rem;
@@ -118,9 +154,10 @@
             
             <div class="form-group">
                 <label class="form-label">From</label>
-                <div class="input-icon">
+                <div class="input-icon autocomplete-wrapper">
                     <span class="icon">📍</span>
-                    <input type="text" id="from" name="from" class="form-input" placeholder="Enter departure city" required>
+                    <input type="text" id="from" name="from" class="form-input" placeholder="Enter departure city" required autocomplete="off">
+                    <ul class="autocomplete-list" id="from-suggestions"></ul>
                 </div>
             </div>
 
@@ -130,9 +167,10 @@
 
             <div class="form-group">
                 <label class="form-label">To</label>
-                <div class="input-icon">
+                <div class="input-icon autocomplete-wrapper">
                     <span class="icon">📍</span>
-                    <input type="text" id="to" name="to" class="form-input" placeholder="Enter destination city" required>
+                    <input type="text" id="to" name="to" class="form-input" placeholder="Enter destination city" required autocomplete="off">
+                    <ul class="autocomplete-list" id="to-suggestions"></ul>
                 </div>
             </div>
 
@@ -166,5 +204,56 @@
 
     // Set min date to today
     document.getElementById('date').min = new Date().toISOString().split('T')[0];
+
+    // Autocomplete functionality
+    function setupAutocomplete(inputId, suggestionsId) {
+        const input = document.getElementById(inputId);
+        const suggestionsList = document.getElementById(suggestionsId);
+        let debounceTimer;
+
+        input.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                suggestionsList.classList.remove('active');
+                suggestionsList.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`/search-autocomplete/?query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        suggestionsList.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(stop => {
+                                const li = document.createElement('li');
+                                li.textContent = stop;
+                                li.addEventListener('click', () => {
+                                    input.value = stop;
+                                    suggestionsList.classList.remove('active');
+                                });
+                                suggestionsList.appendChild(li);
+                            });
+                            suggestionsList.classList.add('active');
+                        } else {
+                            suggestionsList.classList.remove('active');
+                        }
+                    })
+                    .catch(err => console.error('Autocomplete error:', err));
+            }, 300);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !suggestionsList.contains(e.target)) {
+                suggestionsList.classList.remove('active');
+            }
+        });
+    }
+
+    setupAutocomplete('from', 'from-suggestions');
+    setupAutocomplete('to', 'to-suggestions');
 </script>
 {% endblock %}
